@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "Upload to Google Photos",
+  "version": "1.0.0",
+  "description": "Right-click any image and upload it to your Google Photos library.",
+  "key": "YOUR_PUBLIC_KEY_HERE",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Upload to Google Photos",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "options_ui": {
+    "page": "src/options.html",
+    "open_in_tab": false
+  },
+  "permissions": [
+    "contextMenus",
+    "identity",
+    "storage",
+    "notifications",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://photoslibrary.googleapis.com/*"
+  ],
+  "oauth2": {
+    "client_id": "YOUR_CLIENT_ID_HERE",
+    "scopes": [
+      "https://www.googleapis.com/auth/photoslibrary.appendonly"
+    ]
+  }
+}

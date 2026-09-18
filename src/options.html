@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Upload to Google Photos – Options</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <h1 id="heading"></h1>
+
+    <label class="row">
+      <input type="checkbox" id="albumEnabled">
+      <span id="albumCheckboxLabel"></span>
+    </label>
+
+    <div class="field" id="albumField">
+      <label for="albumName" id="albumNameLabel"></label>
+      <input type="text" id="albumName" autocomplete="off" spellcheck="false">
+      <p class="hint" id="albumHint"></p>
+    </div>
+
+    <p class="status" id="status" aria-live="polite"></p>
+  </main>
+  <script type="module" src="options.js"></script>
+</body>
+</html>
