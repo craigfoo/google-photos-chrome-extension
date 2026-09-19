@@ -26,7 +26,7 @@ publishing it on the Chrome Web Store.
 | `scripts/package.js` | Builds the Chrome Web Store zip in `dist/` with `key` stripped (pure Node). |
 | `scripts/make-store-assets.mjs` | Regenerates `store/` (screenshots + promo tiles). Needs `playwright-core` and a Chrome binary; the outputs are committed so you only run it after a visual change. |
 | `store/` | Store listing assets: four 1280×800 screenshots, 440×280 and 1400×560 promo tiles. |
-| `docs/` | Homepage + privacy policy for GitHub Pages; required by Google's OAuth verification. |
+| `docs/` | Homepage + privacy policy, served by GitHub Pages at https://photos.craigrettew.com/ (`docs/CNAME`); required by Google's OAuth verification. |
 
 ## How an upload works
 

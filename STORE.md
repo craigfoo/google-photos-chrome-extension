@@ -5,27 +5,34 @@ Work top to bottom; steps 3–4 change your extension ID and OAuth client, so
 do not skip ahead. Budget: about an hour of clicking, then 1–2 weeks of
 waiting on two separate Google reviews (store listing, OAuth verification).
 
-## 1. Publish the homepage and privacy policy (GitHub Pages)
+## 1. Publish the homepage and privacy policy at photos.craigrettew.com
 
 Google's OAuth verification requires a homepage and a privacy policy on a
-domain you control. The `docs/` folder is a ready-made site.
+domain you control. The `docs/` folder is a ready-made site, served by
+GitHub Pages under your own subdomain.
 
 1. Make the repo public: GitHub → repo → **Settings** → **Danger Zone** →
    **Change visibility** → **Make public**.
 2. **Settings** → **Pages** → Source: **Deploy from a branch** → Branch:
-   `main`, folder: `/docs` → **Save**. (Merge your branch into `main` first if
-   you have not.)
-3. Wait a minute, refresh; a banner shows
-   `Your site is live at https://craigfoo.github.io/google-photos-chrome-extension/`.
-   Open it: you should see the "Upload to Google Photos" page, and
-   `/privacy.html` should show the privacy policy.
-4. Verify the domain in Search Console so Google accepts it as yours:
+   `main`, folder: `/docs` → **Save**.
+3. In your DNS provider for craigrettew.com, add
+   `CNAME  photos  →  craigfoo.github.io`.
+4. **Settings** → **Pages** → **Custom domain**: `photos.craigrettew.com` →
+   **Save**. Wait for "DNS check successful", then tick **Enforce HTTPS**
+   (the box becomes available once the certificate is issued, usually within
+   a few minutes; up to an hour if DNS is slow to propagate). `docs/CNAME`
+   in the repo keeps this setting across future deploys.
+5. Open https://photos.craigrettew.com/ — you should see the
+   "Upload to Google Photos" page with a padlock, and
+   https://photos.craigrettew.com/privacy.html the privacy policy.
+6. Verify the domain in Search Console so Google accepts it as yours:
    https://search.google.com/search-console → **Add property** →
-   **URL prefix** → enter
-   `https://craigfoo.github.io/google-photos-chrome-extension/` → **Continue**
-   → choose the **HTML file** method → download the `google….html` file,
-   commit it into `docs/`, push, wait for Pages to redeploy, then **Verify**.
-   You should see "Ownership verified".
+   **Domain** (the left-hand option) → enter `craigrettew.com` → **Continue**
+   → copy the `google-site-verification=…` TXT record → add it at your DNS
+   provider as a TXT record on the root (`@`) of craigrettew.com → back in
+   Search Console click **Verify**. You should see "Ownership verified".
+   (Domain verification covers every subdomain, so `photos.` is included.
+   If you have verified craigrettew.com before, this step is already done.)
 
 ## 2. Register as a Chrome Web Store developer
 
@@ -81,9 +88,9 @@ Without this, only your test users can sign in and everyone sees the
 
 1. https://console.cloud.google.com/auth/branding → fill in:
    **App logo**: upload `icons/icon128.png`.
-   **App home page**: `https://craigfoo.github.io/google-photos-chrome-extension/`.
-   **Privacy policy**: `https://craigfoo.github.io/google-photos-chrome-extension/privacy.html`.
-   **Authorized domains**: `craigfoo.github.io`. **Save**.
+   **App home page**: `https://photos.craigrettew.com/`.
+   **Privacy policy**: `https://photos.craigrettew.com/privacy.html`.
+   **Authorized domains**: `craigrettew.com`. **Save**.
 2. Left menu → **Audience** → **Publish app** → **Confirm**. Status becomes
    "In production".
 3. Left menu → **Verification Center** (or the "Prepare for verification"
@@ -125,7 +132,8 @@ tick before **Submit for review** is enabled.
    - **Small promo tile**: `store/promo-small-440x280.png`.
    - **Marquee promo tile**: `store/promo-marquee-1400x560.png`.
      (Both are optional; the store shows a generic tile without them.)
-   - **Official URL**: pick your verified `craigfoo.github.io` site.
+   - **Official URL**: pick `craigrettew.com` (the dashboard lists the
+     sites verified in Search Console under the same Google account).
    - **Support URL**: `https://github.com/craigfoo/google-photos-chrome-extension/issues`.
 2. **Privacy** tab:
    - **Single purpose**: paste
@@ -143,7 +151,7 @@ tick before **Submit for review** is enabled.
    - **Data usage**: tick **User activity**? No. Tick **Website content** →
      yes (the image the user selects). Certify the three disclosures
      (no selling, no unrelated use, no creditworthiness use).
-   - **Privacy policy URL**: `https://craigfoo.github.io/google-photos-chrome-extension/privacy.html`.
+   - **Privacy policy URL**: `https://photos.craigrettew.com/privacy.html`.
 3. **Distribution** tab: Visibility **Public**, all regions, free.
 4. Top-right **Submit for review**. Leave "Publish automatically after review"
    ticked. Status becomes **Pending review**. Typical wait: 1–3 days; items
@@ -168,7 +176,8 @@ tick before **Submit for review** is enabled.
 | --- | --- | --- |
 | Uploading the zip fails with "The manifest key field is not allowed" or similar | You zipped by hand and left `key` in | Always build with `node scripts/package.js`; it strips `key`. |
 | Users report `bad client id` / sign-in fails, but it works for you unpacked | OAuth client Item ID ≠ store Item ID, or your local manifest still has the old `key` so you never noticed | Step 3.5 and 4.1: the client's Item ID must be the store's. Check `chrome://extensions` ID against the dashboard header. |
-| OAuth verification rejected: "privacy policy not on homepage domain" or "domain not verified" | Step 1.4 skipped, or the policy URL points at github.com instead of github.io | Both URLs in step 5.1 must be on `craigfoo.github.io`, and that prefix must be verified in Search Console. |
+| OAuth verification rejected: "privacy policy not on homepage domain" or "domain not verified" | Step 1.6 skipped, or the policy URL points at github.com/github.io instead of your domain | Both URLs in step 5.1 must be on `photos.craigrettew.com`, and `craigrettew.com` must be a verified Domain property in Search Console. |
+| https://photos.craigrettew.com shows a GitHub 404 or a certificate warning | DNS not propagated yet, or Custom domain not saved / HTTPS not enforced | `nslookup photos.craigrettew.com` should answer with `craigfoo.github.io`. Re-check Settings → Pages; wait up to an hour after adding the record. |
 | Store review rejected for "excessive permissions" / "broad host permissions" | Reviewer wants the `<all_urls>` optional permission explained | Reply with the `permissions` justification from step 6.2, pointing out it is optional and requested per host at click time. |
 | Store review rejected: "Missing or unclear single purpose" | Description mentions features the extension does not have | Use the description in step 6.1 verbatim. |
 | Everything approved, but new users still see "Google hasn't verified this app" | OAuth verification (step 5) is separate from store review (step 6) and still pending | Check the Verification Center; reply to the `api-oauth-dev` thread if they are waiting on you. |
