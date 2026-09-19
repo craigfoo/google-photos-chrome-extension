@@ -36,7 +36,7 @@
     "scripting"
   ],
   "host_permissions": [
-    "https://photoslibrary.googleapis.com/*"
+    "<all_urls>"
   ],
   "oauth2": {
     "client_id": "YOUR_CLIENT_ID_HERE",

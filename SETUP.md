@@ -78,7 +78,10 @@ own account, that is fine for personal use.
    Update.
 2. Click **Load unpacked**, pick this folder (the one containing
    `manifest.json`), **Select**.
-3. A card "Upload to Google Photos 1.0.0" appears. Under it, **ID:** must be
+3. A card "Upload to Google Photos 1.0.0" appears. (If Chrome shows a
+   "Read and change all your data on all websites" prompt, that is the
+   `<all_urls>` host permission used to download image bytes — accept it.)
+   Under it, **ID:** must be
    exactly the 32-letter ID from step 1. If it is different, the `key` in
    `manifest.json` was pasted wrong — fix it and click the ↻ reload icon on
    the card.
@@ -114,6 +117,6 @@ prefix `[Upload to Google Photos]`.
 | Red toast: "Your Google sign-in has expired or been revoked", or console shows `OAuth2 request failed: ... bad client id` / `invalid_client` | `oauth2.client_id` wrong, or the OAuth client's Item ID does not match the extension ID Chrome shows | `chrome://extensions` ID must equal the Item ID in the Cloud Console client. Re-check `key` in `manifest.json` (step 1) and the client ID (step 4). Reload the extension after edits. |
 | Sign-in window says "Access blocked: … has not completed the Google verification process" / "Error 403: access_denied" | Your account is not a test user, or you signed in with a different account | Step 3.3: add the exact email you are signing in with under **Test users**. |
 | Console: `403 ... Photos Library API has not been used in project ... or it is disabled` | API not enabled in the project that owns the OAuth client | Step 2.2 — enable the API in the same project as the client, wait a minute, retry. |
-| Red toast "The image server refused a cross-origin request (CORS)…" | The image host does not allow reading its bytes from another origin and the page cannot fetch it either | Open the image in its own tab (right-click → Open image in new tab), then right-click it there and upload. Same-origin fetches work. |
+| Red toast "The image server refused a cross-origin request (CORS)…" | Should be rare: `host_permissions` includes `<all_urls>` precisely so the worker can fetch from any host. Seeing it means the extension was not reloaded after that manifest change, or the host blocks the request outright | Click ↻ on the extension card and retry. If it persists, the console shows `TypeError: Failed to fetch`; open the image in its own tab (right-click → Open image in new tab) and upload from there. |
 | Consent screen pops up again after ~7 days | Publishing status is Testing | Expected. Approve again, or publish to Production (see note in step 3). |
 | No toast at all, only a system notification | The page cannot be scripted (chrome://, PDF viewer, Chrome Web Store, file:// URL) | That is the built-in fallback. For `file://` pages, enable **Allow access to file URLs** on the extension card. |

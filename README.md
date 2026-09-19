@@ -29,10 +29,10 @@ Cloud project, OAuth client, loading the extension).
 2. `src/toast.js` is injected into that tab (idempotent) and told to show the
    "uploading" card. If injection is impossible the whole upload reports
    through `chrome.notifications` instead.
-3. The service worker `fetch`es the image (no credentials). If that fails with
-   CORS or a 401/403, it asks the page to fetch it instead (an injected
-   function that runs with the page's origin and cookies) and ships the bytes
-   back as base64.
+3. The service worker `fetch`es the image (no CORS, thanks to the `<all_urls>`
+   host permission). If that still fails, or returns 401/403, it asks the page
+   to fetch it instead (an injected function that runs with the page's origin
+   and cookies) and ships the bytes back as base64.
 4. `POST /v1/uploads` with the raw bytes → upload token (plain text).
 5. If the album option is on, the album ID is resolved (cache → `albums.list`
    with pagination → `albums.create`).
@@ -49,15 +49,17 @@ once. A second 401 is reported as an expired/revoked sign-in.
 
 These were ambiguous in the brief; here is what was chosen and why.
 
-- **Fetching the image bytes with only `photoslibrary.googleapis.com` as a
-  host permission.** The service worker has no host permission for arbitrary
-  image servers, so its `fetch` is subject to CORS and will fail for most
-  cross-origin images. Rather than widen `host_permissions`, the worker falls
-  back to fetching *inside the page* via `chrome.scripting.executeScript`
-  (allowed by `activeTab` because the context-menu click is a user gesture).
-  That succeeds whenever the page itself is allowed to read the image, which
-  covers same-site images and images behind a login the page already holds.
-  If both attempts fail you get the CORS-specific message.
+- **`host_permissions` is `<all_urls>`, not just the Photos API host.** The
+  brief asked for `photoslibrary.googleapis.com` only, and the first build
+  shipped that way. In practice most images live on a CDN that does not send
+  `Access-Control-Allow-Origin`, so without a host permission the service
+  worker's fetch was blocked by CORS, and the in-page fallback (which uses the
+  page's origin) was blocked too; the very first real upload hit this. The only
+  reliable fix is a host permission for the image hosts, and since those are
+  arbitrary, that means `<all_urls>`. With it the worker fetch bypasses CORS
+  entirely. The in-page fallback (`activeTab` + `chrome.scripting.executeScript`)
+  is kept for the rare host that rejects the worker's request but accepts the
+  page's.
 - **`data:` and `blob:` URLs are reported, not uploaded.** The brief lists
   them under error handling, so they get their own message. (`data:` URLs
   could technically be decoded and uploaded; that is a one-function change in
@@ -98,17 +100,17 @@ These were ambiguous in the brief; here is what was chosen and why.
   one thing outside the root is a short inline `style` on the host element
   itself (`all: initial; position: fixed; width: 0; height: 0`), which is what
   stops page rules like `div { border: … }` from styling the mount point.
-- **Worker fetch is uncredentialed, page fetch is credentialed.** The worker
-  uses `credentials: 'omit'` so servers that reply
-  `Access-Control-Allow-Origin: *` (most image CDNs) accept it; the in-page
-  fallback uses `credentials: 'include'` so images behind a cookie login on
-  the current site still work.
+- **Both fetch paths send credentials.** With `<all_urls>` the worker's
+  request carries your cookies for the image host, so images behind a cookie
+  login usually work on the first attempt; the in-page fallback also uses
+  `credentials: 'include'`.
 - **File name** sent to Google is the URL's last path segment (sanitised) with
   an extension added from the mime type if missing.
 - **Permissions used:** `contextMenus` (menu), `identity` (OAuth), `storage`
   (options + album cache), `notifications` (fallback feedback), `activeTab` +
-  `scripting` (toast injection and in-page fetch). `action` is declared so the
-  badge exists; it is not a permission. No `tabs` permission is needed:
+  `scripting` (toast injection and in-page fetch); `host_permissions`
+  `<all_urls>` (fetching image bytes from any host, see above). `action` is
+  declared so the badge exists; it is not a permission. No `tabs` permission is needed:
   `tabs.sendMessage` and `tabs.create` work without it.
 
 ## Keep your key out of git

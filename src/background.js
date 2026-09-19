@@ -118,10 +118,10 @@ async function fetchImage(srcUrl, tabId) {
 
   let response;
   try {
-    // No credentials here: the worker has none for this host anyway, and a
-    // credentialed request would be refused by servers that answer with
-    // Access-Control-Allow-Origin: * (most image CDNs).
-    response = await fetch(srcUrl, { credentials: 'omit' });
+    // Thanks to the <all_urls> host permission this fetch is not subject to
+    // CORS, and Chrome sends the user's cookies for the image host, so images
+    // behind a cookie login usually work here too.
+    response = await fetch(srcUrl, { credentials: 'include' });
   } catch (workerErr) {
     // A TypeError here is almost always CORS (or the host being unreachable).
     // The page itself may still be allowed to read the image, so ask it.
