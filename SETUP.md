@@ -6,16 +6,23 @@ see when it worked.
 ## 1. Generate your key pair and derive the extension ID
 
 1. In a terminal, in this folder, type:
+
+   macOS / Linux:
    ```sh
    openssl genrsa -out ~/google-photos-ext.pem 2048
    node scripts/derive-extension-id.js ~/google-photos-ext.pem
+   ```
+   Windows PowerShell (`~` is not expanded for `openssl.exe`, so use `$HOME`):
+   ```powershell
+   openssl genrsa -out "$HOME\google-photos-ext.pem" 2048
+   node scripts/derive-extension-id.js "$HOME\google-photos-ext.pem"
    ```
    You should see two things printed: a long base64 string under
    `manifest "key":` and a 32-letter ID (letters a–p only) under `extension ID:`.
 2. Open `manifest.json` and replace `YOUR_PUBLIC_KEY_HERE` with the base64
    string (keep the quotes). Save.
 3. Write down the 32-letter ID; steps 4 and 5 need it.
-4. Keep `~/google-photos-ext.pem` somewhere safe and **out of this repo**. If
+4. Keep `google-photos-ext.pem` (in your home folder) somewhere safe and **out of this repo**. If
    you lose it you can regenerate, but the extension ID and OAuth client will
    change and you will redo steps 1–4.
 
