@@ -101,8 +101,18 @@ Without this, only your test users can sign in and everyone sees the
    **Authorized domains**: `craigrettew.com`. **Save**.
 2. Left menu → **Audience** → **Publish app** → **Confirm**. Status becomes
    "In production".
-3. Left menu → **Verification Center** (or the "Prepare for verification"
-   banner) → **Start verification**. You will be asked for:
+3. Verification is two stages, and the second is locked until the first is
+   approved. Left menu → **Verification Center** shows one card per stage.
+   - **Stage 1, Branding**: click **View branding** → at the bottom of the
+     Branding page click **Verify branding** (wording varies: "Submit for
+     verification"). It checks the fields from step 5.1 and that
+     `craigrettew.com` is verified in Search Console under this same Google
+     account (step 1.6) — that is the usual blocker. Approval takes hours to
+     a couple of days; the card then reads "Branding verified" and the
+     consent screen shows your name and logo.
+   - **Stage 2, Data access**: once branding is verified, back in the
+     Verification Center click **Prepare for verification**. You will be
+     asked for:
    - **Scope justification** for `photoslibrary.appendonly`. Paste:
      > The extension adds a "Upload to Google Photos" item to Chrome's image
      > context menu. When the user chooses it, the selected image is uploaded
@@ -114,7 +124,8 @@ Without this, only your test users can sign in and everyone sees the
      Upload → the Google consent screen with the scope shown → the toast →
      the photo appearing at photos.google.com. Under two minutes.
    - Confirmation that the privacy policy URL is on the homepage domain
-     (step 1.4 is what makes this pass).
+     (step 1.6 is what makes this pass).
+   You can record the demo video while stage 1 is pending.
 4. **Submit**. Expect an email thread from `api-oauth-dev@google.com` within a
    few days; answer any follow-up in the same thread. Verified status shows in
    the Verification Center. Until then, sign-in shows the "unverified" warning
