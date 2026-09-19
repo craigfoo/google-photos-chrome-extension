@@ -120,9 +120,11 @@ tick before **Submit for review** is enabled.
      > your library. No servers, no analytics, open source.
    - **Category**: Photos. **Language**: English.
    - **Store icon**: upload `icons/icon128.png`.
-   - **Screenshots**: at least one 1280×800 PNG. Load a page with an image,
-     upload it, and capture the green toast. Windows: `Win+Shift+S`; then
-     resize/crop to 1280×800 in any editor.
+   - **Screenshots**: upload the four files in `store/` named
+     `screenshot-1…` to `screenshot-4…` (1280×800), in that order.
+   - **Small promo tile**: `store/promo-small-440x280.png`.
+   - **Marquee promo tile**: `store/promo-marquee-1400x560.png`.
+     (Both are optional; the store shows a generic tile without them.)
    - **Official URL**: pick your verified `craigfoo.github.io` site.
    - **Support URL**: `https://github.com/craigfoo/google-photos-chrome-extension/issues`.
 2. **Privacy** tab:
