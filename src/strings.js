@@ -51,7 +51,8 @@ export const STRINGS = {
       'extension cannot fetch it again. Save it to disk and upload it manually.',
     CORS:
       'The image server refused a cross-origin request (CORS) and the page ' +
-      'could not fetch it either. Open the image in its own tab and try again.',
+      'could not fetch it either. If Chrome asked to allow access to this ' +
+      'site, allow it and retry; otherwise open the image in its own tab.',
     IMAGE_AUTH:
       'The image server requires a login the extension does not have ' +
       '(HTTP 401/403). Open the image directly in a tab and try from there.',

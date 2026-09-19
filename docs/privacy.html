@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy policy – Upload to Google Photos</title>
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Privacy policy</h1>
+      <p class="tagline">Upload to Google Photos (Chrome extension) · last updated 19 September 2026</p>
+    </header>
+
+    <section>
+      <h2>Summary</h2>
+      <p>
+        The extension has no server, no analytics and no accounts of its own.
+        The only data it handles is the image you explicitly choose to upload,
+        and it sends that image to exactly one place: your own Google Photos
+        library.
+      </p>
+    </section>
+
+    <section>
+      <h2>What data is processed</h2>
+      <ul>
+        <li><strong>The image you right-click.</strong> When you choose "Upload to Google Photos", the extension downloads that image's bytes and sends them to Google Photos. The bytes are held in memory only for the duration of the upload.</li>
+        <li><strong>A Google OAuth access token.</strong> Obtained through Chrome's built-in identity system for the scope <code>https://www.googleapis.com/auth/photoslibrary.appendonly</code>. Chrome stores and refreshes this token; the extension never writes it anywhere.</li>
+        <li><strong>Your settings.</strong> Whether albums are enabled and the album name, saved in Chrome's synced extension storage. The resolved album ID is cached in local extension storage.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>What the extension can do in Google Photos</h2>
+      <p>
+        The <code>appendonly</code> scope allows the extension to add new
+        photos and to create albums. It cannot read, list, modify, share or
+        delete anything already in your library.
+      </p>
+    </section>
+
+    <section>
+      <h2>What is never collected</h2>
+      <ul>
+        <li>No browsing history, page content, or list of sites you visit.</li>
+        <li>No usage analytics, crash reports or telemetry.</li>
+        <li>No personal information. The extension does not know your name or email address.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Permissions</h2>
+      <ul>
+        <li><strong>Read and change data on a site</strong> is requested per image host, only when you first upload an image from that host, and only so the extension can download the image bytes. You can decline; the extension then tries to read the image through the page instead.</li>
+        <li><strong>Active tab / scripting</strong> is used solely to show the upload progress toast on the page you right-clicked.</li>
+        <li><strong>Notifications</strong> are used only when the toast cannot be shown (for example on Chrome's internal pages).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Third parties</h2>
+      <p>
+        The only third party that receives any data is Google, through the
+        Google Photos Library API, and only the image you chose to upload.
+        Google's handling of that data is governed by the
+        <a href="https://policies.google.com/privacy">Google Privacy Policy</a>.
+      </p>
+    </section>
+
+    <section>
+      <h2>Revoking access</h2>
+      <p>
+        Remove the extension from <code>chrome://extensions</code>, and revoke
+        its access at
+        <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.
+        Photos already uploaded stay in your library until you delete them there.
+      </p>
+    </section>
+
+    <section>
+      <h2>Contact</h2>
+      <p>
+        Questions: open an issue at
+        <a href="https://github.com/craigfoo/google-photos-chrome-extension/issues">github.com/craigfoo/google-photos-chrome-extension/issues</a>.
+      </p>
+    </section>
+
+    <footer>
+      <a href="index.html">Home</a>
+    </footer>
+  </main>
+</body>
+</html>

@@ -40,7 +40,10 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId !== MENU_ID || !info.srcUrl) return;
-  startUpload({ srcUrl: info.srcUrl, tabId: tab && tab.id, pageUrl: info.pageUrl });
+  // Must be called synchronously here: the permission prompt needs the user
+  // gesture from the menu click, and any await before it would consume it.
+  const hostAccess = requestHostAccess(info.srcUrl);
+  startUpload({ srcUrl: info.srcUrl, tabId: tab && tab.id, pageUrl: info.pageUrl, hostAccess });
 });
 
 // Retry button in the toast sends this back to us.
@@ -53,16 +56,56 @@ chrome.runtime.onMessage.addListener((message, sender) => {
         tabId: sender.tab ? sender.tab.id : previous.tabId,
         pageUrl: previous.pageUrl,
         reuseId: message.uploadId,
+        // No user gesture on a retry, so only check what was granted before.
+        hostAccess: hasHostAccess(previous.srcUrl),
       });
     }
   }
 });
 
 // ---------------------------------------------------------------------------
+// Optional host permission for the image's origin
+// ---------------------------------------------------------------------------
+
+/**
+ * Host permissions are optional (<all_urls> under optional_host_permissions)
+ * so the store listing does not carry a blanket "read all sites" warning.
+ * Instead we ask for the image's origin the first time it is used; Chrome
+ * shows one prompt per origin and remembers the answer. Once granted, the
+ * worker's fetch to that host is no longer subject to CORS.
+ */
+function originPatternFor(srcUrl) {
+  try {
+    const url = new URL(srcUrl);
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
+    return `${url.origin}/*`;
+  } catch (err) {
+    return null;
+  }
+}
+
+function requestHostAccess(srcUrl) {
+  const pattern = originPatternFor(srcUrl);
+  if (!pattern) return Promise.resolve(false);
+  try {
+    return chrome.permissions.request({ origins: [pattern] }).catch(() => false);
+  } catch (err) {
+    // No user gesture available (should not happen from a menu click).
+    return Promise.resolve(false);
+  }
+}
+
+function hasHostAccess(srcUrl) {
+  const pattern = originPatternFor(srcUrl);
+  if (!pattern) return Promise.resolve(false);
+  return chrome.permissions.contains({ origins: [pattern] }).catch(() => false);
+}
+
+// ---------------------------------------------------------------------------
 // Orchestration
 // ---------------------------------------------------------------------------
 
-async function startUpload({ srcUrl, tabId, pageUrl, reuseId }) {
+async function startUpload({ srcUrl, tabId, pageUrl, reuseId, hostAccess }) {
   const uploadId = reuseId || `gp-${Date.now()}-${nextUploadId++}`;
   uploads.set(uploadId, { srcUrl, tabId, pageUrl });
 
@@ -71,6 +114,8 @@ async function startUpload({ srcUrl, tabId, pageUrl, reuseId }) {
   setBadge('uploading');
 
   try {
+    // Wait for the permission prompt (if any) before touching the network.
+    await hostAccess;
     const result = await uploadImage(srcUrl, tabId);
     setBadge('success');
     await feedback.success(result.productUrl || PHOTOS_HOME);
@@ -107,10 +152,11 @@ async function uploadImage(srcUrl, tabId) {
 // ---------------------------------------------------------------------------
 
 /**
- * Get the image bytes. Tries the service worker first (works for servers that
- * allow cross-origin reads), then falls back to fetching inside the page,
- * which uses the page's origin and cookies and therefore works for same-site
- * images and images behind a login the page already has.
+ * Get the image bytes. Tries the service worker first (not subject to CORS
+ * once the image's origin has been granted, see requestHostAccess), then
+ * falls back to fetching inside the page, which uses the page's origin and
+ * cookies and therefore works for same-site images and images behind a login
+ * the page already has.
  */
 async function fetchImage(srcUrl, tabId) {
   if (srcUrl.startsWith('data:')) throw new UploadError('DATA_URL');
@@ -118,13 +164,13 @@ async function fetchImage(srcUrl, tabId) {
 
   let response;
   try {
-    // Thanks to the <all_urls> host permission this fetch is not subject to
-    // CORS, and Chrome sends the user's cookies for the image host, so images
-    // behind a cookie login usually work here too.
+    // With the origin granted, Chrome also sends the user's cookies for the
+    // image host, so images behind a cookie login usually work here too.
     response = await fetch(srcUrl, { credentials: 'include' });
   } catch (workerErr) {
-    // A TypeError here is almost always CORS (or the host being unreachable).
-    // The page itself may still be allowed to read the image, so ask it.
+    // A TypeError here is almost always CORS (origin not granted, or the
+    // user declined the prompt) or the host being unreachable. The page
+    // itself may still be allowed to read the image, so ask it.
     const fromPage = tabId != null ? await fetchImageInPage(tabId, srcUrl) : null;
     if (!fromPage) throw new UploadError('CORS');
     return finishFetch(fromPage.bytes, fromPage.contentType, srcUrl);

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Upload to Google Photos – Chrome extension</title>
+  <meta name="description" content="Right-click any image in Chrome and upload it straight to your Google Photos library.">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <main>
+    <header>
+      <img src="icon128.png" alt="" width="64" height="64">
+      <h1>Upload to Google Photos</h1>
+      <p class="tagline">Right-click any image in Chrome and send it straight to your Google Photos library.</p>
+    </header>
+
+    <section>
+      <h2>What it does</h2>
+      <ul>
+        <li>Adds one item to the image context menu: <strong>Upload to Google Photos</strong>.</li>
+        <li>Shows a small in-page toast with a thumbnail and progress, then a link to the uploaded photo.</li>
+        <li>Optionally files every upload into an album of your choice.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>What it can and cannot see</h2>
+      <p>
+        The extension asks Google only for permission to <em>add</em> photos
+        (<code>photoslibrary.appendonly</code>). It cannot read, list, edit or
+        delete anything already in your library.
+      </p>
+      <p>
+        It has no server of its own. Image bytes travel directly from the site
+        you are on to Google Photos; nothing is logged or stored anywhere else.
+        See the <a href="privacy.html">privacy policy</a>.
+      </p>
+    </section>
+
+    <section>
+      <h2>Source</h2>
+      <p>
+        The code is open: <a href="https://github.com/craigfoo/google-photos-chrome-extension">github.com/craigfoo/google-photos-chrome-extension</a>.
+      </p>
+    </section>
+
+    <footer>
+      <a href="privacy.html">Privacy policy</a>
+    </footer>
+  </main>
+</body>
+</html>

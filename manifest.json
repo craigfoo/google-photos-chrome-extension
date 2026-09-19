@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Upload to Google Photos",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Right-click any image and upload it to your Google Photos library.",
   "key": "YOUR_PUBLIC_KEY_HERE",
   "icons": {
@@ -33,9 +33,13 @@
     "storage",
     "notifications",
     "activeTab",
-    "scripting"
+    "scripting",
+    "permissions"
   ],
   "host_permissions": [
+    "https://photoslibrary.googleapis.com/*"
+  ],
+  "optional_host_permissions": [
     "<all_urls>"
   ],
   "oauth2": {
