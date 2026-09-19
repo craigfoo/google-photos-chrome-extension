@@ -119,10 +119,12 @@ These were ambiguous in the brief; here is what was chosen and why.
   an extension added from the mime type if missing.
 - **Permissions used:** `contextMenus` (menu), `identity` (OAuth), `storage`
   (options + album cache), `notifications` (fallback feedback), `activeTab` +
-  `scripting` (toast injection and in-page fetch), `permissions` (the
-  per-host request above); `host_permissions` for the Photos API only;
-  `optional_host_permissions: <all_urls>` (image hosts, granted one at a
-  time). `action` is declared so the badge exists; it is not a permission. No
+  `scripting` (toast injection and in-page fetch); `host_permissions` for the
+  Photos API only; `optional_host_permissions: <all_urls>` (image hosts,
+  granted one at a time via `chrome.permissions.request`, which needs no
+  manifest permission of its own — listing `"permissions"` there makes Chrome
+  warn "Permission 'permissions' is unknown"). `action` is declared so the
+  badge exists; it is not a permission. No
   `tabs` permission is needed: `tabs.sendMessage` and `tabs.create` work
   without it.
 - **Store build strips `key`.** `scripts/package.js` writes

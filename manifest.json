@@ -33,8 +33,7 @@
     "storage",
     "notifications",
     "activeTab",
-    "scripting",
-    "permissions"
+    "scripting"
   ],
   "host_permissions": [
     "https://photoslibrary.googleapis.com/*"
