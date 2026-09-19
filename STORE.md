@@ -125,7 +125,8 @@ tick before **Submit for review** is enabled.
      > upload into an album you name. Uses Google's append-only scope: the
      > extension can add photos but cannot read, edit or delete anything in
      > your library. No servers, no analytics, open source.
-   - **Category**: Photos. **Language**: English.
+   - **Category**: Tools (there is no Photos category; "Art & Design" is
+     for editors). **Language**: English.
    - **Store icon**: upload `icons/icon128.png`.
    - **Screenshots**: upload the four files in `store/` named
      `screenshot-1…` to `screenshot-4…` (1280×800), in that order.
