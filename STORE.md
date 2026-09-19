@@ -61,10 +61,10 @@ SETUP.md. Upload once to learn the new ID, then align everything with it.
 3. Note the **Item ID** shown in the page header (32 letters, a–p). This is
    the extension's permanent store ID.
 4. Left menu → **Package** → **View public key** → select everything in the
-   box, including the `-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC
-   KEY-----` lines, and save it as a file, e.g. `$HOME\store-key.pub`
-   (Notepad is fine; make sure it saves as plain text, not `.txt` appended
-   to a different name).
+   box and save it as a file, e.g. `$HOME\store-key.pub`. With or without
+   the `-----BEGIN/END PUBLIC KEY-----` lines, Notepad or PowerShell
+   redirection, UTF-8 or UTF-16 — the script in the next step accepts all
+   of them.
 5. Convert it to the one-line form the manifest needs, and check the ID:
    ```powershell
    node scripts/derive-extension-id.js "$HOME\store-key.pub"
