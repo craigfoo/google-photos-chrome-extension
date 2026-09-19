@@ -60,13 +60,21 @@ SETUP.md. Upload once to learn the new ID, then align everything with it.
    **Upload**. You land on the item's editing page. Do **not** submit yet.
 3. Note the **Item ID** shown in the page header (32 letters, a–p). This is
    the extension's permanent store ID.
-4. Left menu → **Package** → **View public key** → copy the base64 block
-   (without the `-----BEGIN/END PUBLIC KEY-----` lines and without line
-   breaks).
-5. Open your local `manifest.json` and replace the `key` value with that
-   public key. This makes your locally loaded copy use the store ID too, so
-   one OAuth client serves both. Your old `.pem` from SETUP.md is no longer
-   needed.
+4. Left menu → **Package** → **View public key** → select everything in the
+   box, including the `-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC
+   KEY-----` lines, and save it as a file, e.g. `$HOME\store-key.pub`
+   (Notepad is fine; make sure it saves as plain text, not `.txt` appended
+   to a different name).
+5. Convert it to the one-line form the manifest needs, and check the ID:
+   ```powershell
+   node scripts/derive-extension-id.js "$HOME\store-key.pub"
+   ```
+   The printed `extension ID` must equal the Item ID from step 3.3. Copy the
+   single line under `manifest "key":` into your local `manifest.json` as the
+   `key` value, replacing the old one. (Pasting the dashboard's multi-line
+   text directly gives "Value 'key' is missing or invalid".) This makes your
+   locally loaded copy use the store ID too, so one OAuth client serves both.
+   Your old `.pem` from SETUP.md is no longer needed.
 6. `chrome://extensions` → ↻ on the extension card → the **ID** shown must now
    equal the store Item ID from step 3.3.
 

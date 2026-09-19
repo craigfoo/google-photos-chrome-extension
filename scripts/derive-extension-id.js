@@ -1,8 +1,15 @@
 #!/usr/bin/env node
 // Derive the manifest "key" value and the Chrome extension ID from a PEM
-// private key. No dependencies; uses Node's built-in crypto.
+// key. No dependencies; uses Node's built-in crypto.
 //
 //   node scripts/derive-extension-id.js path/to/key.pem
+//
+// The file may be either:
+//   - an RSA private key you generated (SETUP.md step 1), or
+//   - the public key the Chrome Web Store shows under Package -> "View
+//     public key" (STORE.md step 3), pasted into a file as-is, BEGIN/END
+//     lines included. The script prints the one-line value the manifest
+//     needs and the extension ID, which must match the store's Item ID.
 //
 // How Chrome does it: the extension ID is the first 16 bytes of the SHA-256
 // hash of the DER-encoded SubjectPublicKeyInfo, with each nibble mapped to
@@ -15,11 +22,13 @@ const fs = require('node:fs');
 const crypto = require('node:crypto');
 
 function derivePublicKeyDer(pem) {
-  const privateKey = crypto.createPrivateKey(pem);
-  if (privateKey.asymmetricKeyType !== 'rsa') {
-    throw new Error(`Expected an RSA key, got ${privateKey.asymmetricKeyType}`);
+  const publicKey = /-----BEGIN (RSA )?PUBLIC KEY-----/.test(pem)
+    ? crypto.createPublicKey(pem)
+    : crypto.createPublicKey(crypto.createPrivateKey(pem));
+  if (publicKey.asymmetricKeyType !== 'rsa') {
+    throw new Error(`Expected an RSA key, got ${publicKey.asymmetricKeyType}`);
   }
-  return crypto.createPublicKey(privateKey).export({ type: 'spki', format: 'der' });
+  return publicKey.export({ type: 'spki', format: 'der' });
 }
 
 function extensionIdFromDer(der) {
