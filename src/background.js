@@ -30,13 +30,20 @@ class UploadError extends Error {
 // Install / menu
 // ---------------------------------------------------------------------------
 
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.contextMenus.create({
-    id: MENU_ID,
-    title: STRINGS.menuTitle,
-    contexts: ['image'],
+// removeAll first so a reload (which also fires onInstalled) does not fail
+// with "duplicate id". Also rebuilt on browser startup as a safety net.
+function createMenu() {
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: MENU_ID,
+      title: STRINGS.menuTitle,
+      contexts: ['image'],
+    });
   });
-});
+}
+
+chrome.runtime.onInstalled.addListener(createMenu);
+chrome.runtime.onStartup.addListener(createMenu);
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId !== MENU_ID || !info.srcUrl) return;
