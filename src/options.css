@@ -45,3 +45,18 @@ h1 { font-size: 18px; font-weight: 600; margin: 0 0 20px; }
 .hint { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
 .status { min-height: 1.4em; margin: 16px 0 0 26px; font-size: 13px; color: var(--ok); }
 .status.error { color: #d93025; }
+.account { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border); }
+.account h2 { font-size: 14px; font-weight: 600; margin: 0 0 6px; }
+.account .hint { margin: 0 0 12px; }
+.account button {
+  font: inherit;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+}
+.account button:hover { border-color: var(--accent); color: var(--accent); }
+.account button:disabled { opacity: 0.5; cursor: default; }
+.account a { display: block; margin-top: 12px; font-size: 13px; color: var(--accent); }

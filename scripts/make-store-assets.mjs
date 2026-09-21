@@ -201,12 +201,12 @@ function optionsMock(dark, port) {
     html, body { margin: 0; width: 1280px; height: 800px; overflow: hidden; font-family: ${FONT}; background: ${c.bg}; }
     .caption { position: absolute; left: 40px; top: 40px; background: ${c.card}; color: ${c.text}; padding: 16px 22px; border-radius: 14px; font-size: 26px; font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,0.16); display: flex; align-items: center; gap: 14px; }
     .caption img { width: 36px; height: 36px; border-radius: 9px; }
-    .dialog { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -46%); width: 560px; background: ${c.card}; border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,0.22); overflow: hidden; }
+    .dialog { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 560px; background: ${c.card}; border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,0.22); overflow: hidden; }
     .dialog .head { display: flex; align-items: center; gap: 12px; padding: 18px 24px; border-bottom: 1px solid rgba(128,128,128,0.2); color: ${c.text}; font-size: 15px; }
     .dialog .head img { width: 24px; height: 24px; border-radius: 6px; }
     .dialog .head .x { margin-left: auto; color: ${c.muted}; font-size: 20px; }
-    iframe { display: block; width: 560px; height: 260px; border: 0; }
-    .note { position: absolute; left: 50%; transform: translateX(-50%); bottom: 90px; color: ${c.muted}; font-size: 16px; }
+    iframe { display: block; width: 560px; height: 440px; border: 0; }
+    .note { position: absolute; left: 50%; transform: translateX(-50%); bottom: 36px; color: ${c.muted}; font-size: 16px; }
   </style></head><body>
     <div class="caption"><img src="${icon128}">Optional: file every upload into an album</div>
     <div class="dialog">

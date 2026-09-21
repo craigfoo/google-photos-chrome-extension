@@ -38,6 +38,13 @@ export const STRINGS = {
       'Change the name to switch albums.',
     saved: 'Saved',
     albumNameRequired: 'Enter an album name, or untick the box.',
+    accountHeading: 'Google account',
+    accountHint:
+      'Forget the current sign-in. The next upload will ask you to choose an ' +
+      'account and approve access again.',
+    disconnect: 'Disconnect Google account',
+    disconnected: 'Disconnected. The next upload will ask you to sign in.',
+    manageLink: 'Manage or revoke access in your Google account',
   },
 
   // Error messages, keyed by error code. Each one is specific: the toast never

@@ -7,6 +7,7 @@ const enabledBox = document.getElementById('albumEnabled');
 const nameInput = document.getElementById('albumName');
 const field = document.getElementById('albumField');
 const status = document.getElementById('status');
+const disconnectButton = document.getElementById('disconnect');
 
 function applyStrings() {
   document.title = STRINGS.options.pageTitle;
@@ -15,6 +16,24 @@ function applyStrings() {
   document.getElementById('albumNameLabel').textContent = STRINGS.options.albumNameLabel;
   document.getElementById('albumHint').textContent = STRINGS.options.albumHint;
   nameInput.placeholder = STRINGS.options.albumNamePlaceholder;
+  document.getElementById('accountHeading').textContent = STRINGS.options.accountHeading;
+  document.getElementById('accountHint').textContent = STRINGS.options.accountHint;
+  disconnectButton.textContent = STRINGS.options.disconnect;
+  document.getElementById('manageLink').textContent = STRINGS.options.manageLink;
+}
+
+// Drops every token Chrome has cached for this extension. It does not revoke
+// the grant on Google's side (that needs the account page, linked below), but
+// the service worker treats a missing token as "sign in again", which is what
+// people want when switching accounts or re-testing the consent screen.
+async function disconnect() {
+  disconnectButton.disabled = true;
+  try {
+    await chrome.identity.clearAllCachedAuthTokens();
+    showStatus(STRINGS.options.disconnected, false);
+  } finally {
+    disconnectButton.disabled = false;
+  }
 }
 
 function refreshFieldState() {
@@ -53,6 +72,7 @@ async function save() {
 
 enabledBox.addEventListener('change', () => { refreshFieldState(); save(); });
 nameInput.addEventListener('input', save);
+disconnectButton.addEventListener('click', disconnect);
 
 applyStrings();
 load();
