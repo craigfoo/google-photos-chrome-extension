@@ -201,7 +201,7 @@
     // Two frames so the initial transform is committed before we animate in.
     requestAnimationFrame(() => requestAnimationFrame(() => card.classList.add('in')));
 
-    const entry = { card, title, detail, actions, timer: null };
+    const entry = { card, thumb, title, detail, actions, timer: null };
     cards.set(uploadId, entry);
     return entry;
   }
@@ -210,6 +210,11 @@
     const { uploadId, state, labels } = message;
     let entry = cards.get(uploadId);
     if (!entry) entry = createCard(uploadId, labels, message.thumbnail);
+    else if (message.thumbnail && !entry.thumb.getAttribute('src')) {
+      // The "image under cursor" flow learns the URL after the card is shown.
+      entry.thumb.classList.remove('hidden');
+      entry.thumb.src = message.thumbnail;
+    }
 
     const { card, title, detail, actions } = entry;
     card.classList.remove('uploading', 'success', 'failure');

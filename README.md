@@ -71,6 +71,19 @@ These were ambiguous in the brief; here is what was chosen and why.
   `permissions.contains` is checked. If the user declines, the in-page
   fallback (`activeTab` + `chrome.scripting.executeScript`) still runs and
   works whenever the page itself may read the image.
+- **A second menu item for sites that overlay their photos.** Instagram,
+  Threads and Facebook put a transparent element over every `<img>` to defeat
+  right-click saving, so Chrome opens the plain page menu and an
+  `contexts: ['image']` item can never appear. On those sites (matched by
+  `documentUrlPatterns`) a page-menu item "Upload image under cursor to
+  Google Photos" is shown instead. It injects `pageFindImageUnderCursor`,
+  which uses the `:hover` chain Chrome keeps alive while the menu is open,
+  looks through the overlay with `elementsFromPoint`, falls back to the
+  largest visible image inside the hovered ancestors (for a click on the
+  caption), and returns the largest `srcset` candidate. Because their CDN
+  hosts are known (`cdninstagram.com`, `fbcdn.net`), the host-permission
+  prompt is still issued synchronously on the click. To cover another site,
+  add its page and CDN patterns to `OVERLAY_SITES` in `background.js`.
 - **`data:` and `blob:` URLs are reported, not uploaded.** The brief lists
   them under error handling, so they get their own message. (`data:` URLs
   could technically be decoded and uploaded; that is a one-function change in

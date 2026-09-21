@@ -4,6 +4,7 @@
 import { STRINGS, format } from './strings.js';
 
 const MENU_ID = 'upload-to-google-photos';
+const MENU_ID_CURSOR = 'upload-image-under-cursor-to-google-photos';
 const PHOTOS_API = 'https://photoslibrary.googleapis.com/v1';
 const PHOTOS_HOME = 'https://photos.google.com';
 const MAX_BYTES = 200 * 1024 * 1024; // Google Photos hard limit per upload
@@ -30,6 +31,19 @@ class UploadError extends Error {
 // Install / menu
 // ---------------------------------------------------------------------------
 
+/**
+ * Sites that lay a transparent element over every photo to defeat right-click
+ * saving. Chrome then opens the plain page menu instead of the image menu, so
+ * the normal item never appears there. For these sites a second item is shown
+ * in the page menu; on click, a script in the page finds the image under the
+ * pointer. Their CDN hosts are listed too so the host-permission prompt can be
+ * issued synchronously on the click, before the image URL is known.
+ */
+const OVERLAY_SITES = {
+  pages: ['*://*.instagram.com/*', '*://*.threads.net/*', '*://*.facebook.com/*'],
+  imageHosts: ['*://*.cdninstagram.com/*', '*://*.fbcdn.net/*'],
+};
+
 // removeAll first so a reload (which also fires onInstalled) does not fail
 // with "duplicate id". Also rebuilt on browser startup as a safety net.
 function createMenu() {
@@ -39,6 +53,12 @@ function createMenu() {
       title: STRINGS.menuTitle,
       contexts: ['image'],
     });
+    chrome.contextMenus.create({
+      id: MENU_ID_CURSOR,
+      title: STRINGS.menuTitleCursor,
+      contexts: ['page', 'link', 'video'],
+      documentUrlPatterns: OVERLAY_SITES.pages,
+    });
   });
 }
 
@@ -46,11 +66,16 @@ chrome.runtime.onInstalled.addListener(createMenu);
 chrome.runtime.onStartup.addListener(createMenu);
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId !== MENU_ID || !info.srcUrl) return;
-  // Must be called synchronously here: the permission prompt needs the user
-  // gesture from the menu click, and any await before it would consume it.
-  const hostAccess = requestHostAccess(info.srcUrl);
-  startUpload({ srcUrl: info.srcUrl, tabId: tab && tab.id, pageUrl: info.pageUrl, hostAccess });
+  const tabId = tab && tab.id;
+  if (info.menuItemId === MENU_ID && info.srcUrl) {
+    // Must be called synchronously here: the permission prompt needs the user
+    // gesture from the menu click, and any await before it would consume it.
+    const hostAccess = requestHostAccess(info.srcUrl);
+    startUpload({ srcUrl: info.srcUrl, tabId, pageUrl: info.pageUrl, hostAccess });
+  } else if (info.menuItemId === MENU_ID_CURSOR && tabId != null) {
+    const hostAccess = requestHostPatterns(OVERLAY_SITES.imageHosts);
+    startUpload({ srcUrl: null, tabId, pageUrl: info.pageUrl, hostAccess });
+  }
 });
 
 // Retry button in the toast sends this back to us.
@@ -91,15 +116,19 @@ function originPatternFor(srcUrl) {
   }
 }
 
-function requestHostAccess(srcUrl) {
-  const pattern = originPatternFor(srcUrl);
-  if (!pattern) return Promise.resolve(false);
+function requestHostPatterns(origins) {
   try {
-    return chrome.permissions.request({ origins: [pattern] }).catch(() => false);
+    return chrome.permissions.request({ origins }).catch(() => false);
   } catch (err) {
     // No user gesture available (should not happen from a menu click).
     return Promise.resolve(false);
   }
+}
+
+function requestHostAccess(srcUrl) {
+  const pattern = originPatternFor(srcUrl);
+  if (!pattern) return Promise.resolve(false);
+  return requestHostPatterns([pattern]);
 }
 
 function hasHostAccess(srcUrl) {
@@ -112,6 +141,10 @@ function hasHostAccess(srcUrl) {
 // Orchestration
 // ---------------------------------------------------------------------------
 
+/**
+ * srcUrl may be null for the "image under cursor" item; it is then resolved
+ * inside the tab after the toast is up, so the user sees feedback immediately.
+ */
 async function startUpload({ srcUrl, tabId, pageUrl, reuseId, hostAccess }) {
   const uploadId = reuseId || `gp-${Date.now()}-${nextUploadId++}`;
   uploads.set(uploadId, { srcUrl, tabId, pageUrl });
@@ -121,6 +154,12 @@ async function startUpload({ srcUrl, tabId, pageUrl, reuseId, hostAccess }) {
   setBadge('uploading');
 
   try {
+    if (!srcUrl) {
+      srcUrl = await findImageUnderCursor(tabId);
+      if (!srcUrl) throw new UploadError('NO_IMAGE');
+      uploads.get(uploadId).srcUrl = srcUrl; // so Retry can skip the lookup
+      await feedback.thumbnail(srcUrl);
+    }
     // Wait for the permission prompt (if any) before touching the network.
     await hostAccess;
     const result = await uploadImage(srcUrl, tabId);
@@ -204,6 +243,79 @@ async function fetchImage(srcUrl, tabId) {
     throw new UploadError('NETWORK');
   }
   return finishFetch(buffer, response.headers.get('content-type'), srcUrl);
+}
+
+// ---------------------------------------------------------------------------
+// Locating the image under the pointer (overlay sites)
+// ---------------------------------------------------------------------------
+
+/**
+ * Runs inside the tab. Chrome keeps the :hover chain alive while the context
+ * menu is open, so the deepest hovered element marks where the user clicked.
+ * elementsFromPoint at its centre sees through a transparent overlay to the
+ * <img> underneath. If the pointer drifted off the photo (onto a caption, say)
+ * the hovered ancestors are searched for the largest visible image instead.
+ * Returns the best URL (largest srcset candidate) or null.
+ */
+function pageFindImageUnderCursor() {
+  const MIN_SIDE = 80;
+
+  function bestUrl(img) {
+    let best = img.currentSrc || img.src || '';
+    let bestWidth = 0;
+    for (const candidate of (img.srcset || '').split(',')) {
+      const [url, descriptor] = candidate.trim().split(/\s+/);
+      const width = parseInt(descriptor, 10);
+      if (url && width > bestWidth) { bestWidth = width; best = url; }
+    }
+    return best;
+  }
+
+  function visibleArea(img) {
+    const r = img.getBoundingClientRect();
+    if (r.width < MIN_SIDE || r.height < MIN_SIDE) return 0;
+    if (r.bottom < 0 || r.right < 0 || r.top > innerHeight || r.left > innerWidth) return 0;
+    return r.width * r.height;
+  }
+
+  const hovered = Array.from(document.querySelectorAll(':hover'));
+  if (hovered.length === 0) return null;
+  const deepest = hovered[hovered.length - 1];
+  // Pointer over nothing in particular: say so rather than guess.
+  if (deepest === document.body || deepest === document.documentElement) return null;
+
+  const rect = deepest.getBoundingClientRect();
+  const stack = document.elementsFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+  for (const el of stack) {
+    if (el instanceof HTMLImageElement && visibleArea(el) > 0) return bestUrl(el);
+  }
+
+  // Ancestors only, never the whole document: a right-click on empty space
+  // should report "no image", not grab the biggest photo on the page.
+  for (let i = hovered.length - 1; i >= 0; i--) {
+    if (hovered[i] === document.body || hovered[i] === document.documentElement) break;
+    let best = null;
+    let bestArea = 0;
+    for (const img of hovered[i].querySelectorAll('img')) {
+      const area = visibleArea(img);
+      if (area > bestArea) { bestArea = area; best = img; }
+    }
+    if (best) return bestUrl(best);
+  }
+  return null;
+}
+
+async function findImageUnderCursor(tabId) {
+  try {
+    const [injection] = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: pageFindImageUnderCursor,
+    });
+    const url = injection && injection.result;
+    return typeof url === 'string' && /^(https?|data|blob):/.test(url) ? url : null;
+  } catch (err) {
+    return null;
+  }
 }
 
 /** Runs inside the tab: fetch the URL with the page's credentials and return base64. */
@@ -560,6 +672,7 @@ async function createFeedback(uploadId, tabId, srcUrl) {
         .catch(() => {}); // tab navigated away; nothing to show
     return {
       uploading: () => send({ state: 'uploading', thumbnail: srcUrl }),
+      thumbnail: (url) => send({ state: 'uploading', thumbnail: url }),
       success: (url) => send({ state: 'success', url }),
       failure: (reason) => send({ state: 'failure', reason }),
     };
@@ -594,6 +707,7 @@ function notificationFeedback(uploadId) {
     });
   return {
     uploading: () => show(STRINGS.notification.uploadingTitle, STRINGS.notification.uploadingMessage),
+    thumbnail: () => Promise.resolve(), // notifications have no late thumbnail
     success: () => show(STRINGS.notification.successTitle, STRINGS.notification.successMessage),
     failure: (reason) => show(STRINGS.notification.failedTitle, reason),
   };

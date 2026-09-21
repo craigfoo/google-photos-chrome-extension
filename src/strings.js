@@ -3,8 +3,11 @@
 // toast labels to the injected toast script, which cannot import modules.
 
 export const STRINGS = {
-  // Context menu
+  // Context menu. The second item appears in the page menu on sites that
+  // cover their photos with an overlay (Instagram, Threads, Facebook), where
+  // Chrome never offers the image menu.
   menuTitle: 'Upload to Google Photos',
+  menuTitleCursor: 'Upload image under cursor to Google Photos',
 
   // Toast labels
   toast: {
@@ -84,6 +87,9 @@ export const STRINGS = {
     ITEM_FAILED: 'Google Photos could not add the item: {detail}',
     ALBUM: 'Could not find or create the album "{name}": {detail}',
     EMPTY: 'The image server returned an empty file.',
+    NO_IMAGE:
+      'No image was found under the cursor. Right-click directly on the ' +
+      'photo, without moving the mouse, and try again.',
   },
 
   // Badge text (max ~4 characters)
