@@ -77,9 +77,26 @@ export const STRINGS = {
       'Google Photos rejected the request because the API quota was exceeded. ' +
       'Wait a minute and retry.',
     TOKEN:
-      'Your Google sign-in has expired or been revoked. Retry to sign in again.',
+      'Google rejected the sign-in even after signing in again ({detail}). ' +
+      'Open the extension\'s Options, click "Disconnect Google account", then retry.',
     AUTH_CANCELLED:
-      'Sign-in was cancelled, so nothing was uploaded. Retry to sign in.',
+      'Google sign-in did not complete ("{detail}"). If you did sign in, Chrome ' +
+      'itself is probably not signed in on this computer: click your profile ' +
+      'picture at the top right of Chrome, sign in to Chrome with the account ' +
+      'you use for Google Photos, then retry.',
+    AUTH_NO_CHROME_ACCOUNT:
+      'Chrome is not signed in to a Google account on this computer, and the ' +
+      'extension can only upload for the account Chrome is signed in to. Click ' +
+      'your profile picture at the top right of Chrome → Sign in, then retry. ' +
+      '(If there is no sign-in option, turn on Settings → You and Google → ' +
+      '"Allow Chrome sign-in".)',
+    AUTH_CLIENT:
+      'Google refused this extension\'s OAuth client ("{detail}"). The client ' +
+      'ID in manifest.json does not belong to this extension ID; see STORE.md step 4.',
+    AUTH_UNSUPPORTED:
+      'This browser does not support Chrome\'s Google sign-in ("{detail}"). ' +
+      'Edge, Brave and other Chromium browsers lack it; use Google Chrome.',
+    AUTH_FAILED: 'Chrome could not get a Google sign-in: "{detail}".',
     UPLOAD_HTTP: 'Google Photos rejected the upload with HTTP {status}: {detail}',
     CREATE_HTTP:
       'Google Photos accepted the bytes but failed to create the item ' +

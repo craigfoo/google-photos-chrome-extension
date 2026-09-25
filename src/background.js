@@ -426,15 +426,29 @@ function getAuthToken(interactive) {
     chrome.identity.getAuthToken({ interactive }, (result) => {
       const token = typeof result === 'string' ? result : result && result.token;
       if (chrome.runtime.lastError || !token) {
-        const msg = (chrome.runtime.lastError && chrome.runtime.lastError.message) || '';
-        // Chrome reports a closed consent window as "The user did not approve access."
-        const cancelled = /did not approve|canceled|cancelled|closed/i.test(msg);
-        reject(new UploadError(cancelled ? 'AUTH_CANCELLED' : 'TOKEN'));
+        const msg = (chrome.runtime.lastError && chrome.runtime.lastError.message) || 'no token returned';
+        console.warn('[Upload to Google Photos] getAuthToken failed:', msg);
+        reject(new UploadError(classifyAuthError(msg), { detail: msg }));
         return;
       }
       resolve(token);
     });
   });
+}
+
+/**
+ * Map chrome.identity's error text to a specific message. getAuthToken only
+ * ever issues tokens for the account Chrome itself is signed in to; signing
+ * in to Google on a web page is not enough. On a machine where Chrome has no
+ * account, the sign-in popup can finish without signing Chrome in, and Chrome
+ * then reports "did not approve" — so that case points at Chrome sign-in too.
+ */
+function classifyAuthError(msg) {
+  if (/not signed in|browser ?sign-?in|sign in to chrome|no account/i.test(msg)) return 'AUTH_NO_CHROME_ACCOUNT';
+  if (/bad client id|invalid_client|client_id/i.test(msg)) return 'AUTH_CLIENT';
+  if (/unsupported|not supported|not available/i.test(msg)) return 'AUTH_UNSUPPORTED';
+  if (/did not approve|cancel|closed|denied|access_denied/i.test(msg)) return 'AUTH_CANCELLED';
+  return 'AUTH_FAILED';
 }
 
 function removeCachedAuthToken(token) {
@@ -466,8 +480,9 @@ async function withAuthRetry(operation) {
       return await operation(token);
     } catch (retryErr) {
       if (retryErr instanceof HttpError && retryErr.status === 401) {
+        console.warn('[Upload to Google Photos] 401 again with a fresh token:', retryErr.detail);
         await removeCachedAuthToken(token);
-        throw new UploadError('TOKEN');
+        throw new UploadError('TOKEN', { detail: retryErr.detail });
       }
       throw retryErr;
     }
