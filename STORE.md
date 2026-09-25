@@ -141,14 +141,29 @@ tick before **Submit for review** is enabled.
      > Right-click any image in Chrome and upload it straight to your Google
      > Photos library. A small toast on the page shows a thumbnail and upload
      > progress, then links to the uploaded photo. Optionally files every
-     > upload into an album you name. Uses Google's append-only scope: the
-     > extension can add photos but cannot read, edit or delete anything in
-     > your library. No servers, no analytics, open source.
+     > upload into an album you name.
+     >
+     > On Instagram, Threads and Facebook, which cover their photos with an
+     > invisible layer, use "Upload image under cursor to Google Photos"
+     > from the right-click menu instead.
+     >
+     > No toast? Chrome doesn't let extensions draw on some pages: the Chrome
+     > Web Store, chrome:// pages such as Settings and New Tab, the PDF viewer
+     > and local files. There, watch the toolbar icon: blue dots while
+     > uploading, a green check when done, a red ! if it failed. A system
+     > notification also reports the result. Pin the icon (puzzle-piece menu →
+     > pin) to always see it.
+     >
+     > Uses Google's append-only scope: the extension can add photos but
+     > cannot read, edit or delete anything in your library. No servers, no
+     > analytics, open source.
    - **Category**: Tools (there is no Photos category; "Art & Design" is
      for editors). **Language**: English.
    - **Store icon**: upload `icons/icon128.png`.
-   - **Screenshots**: upload the four files in `store/` named
-     `screenshot-1…` to `screenshot-4…` (1280×800), in that order.
+   - **Screenshots**: upload the five files in `store/` named
+     `screenshot-1…` to `screenshot-5…` (1280×800), in that order. Five is
+     the store's maximum; number 5 explains the toolbar badge and the pages
+     where the toast can't appear.
    - **Small promo tile**: `store/promo-small-440x280.png`.
    - **Marquee promo tile**: `store/promo-marquee-1400x560.png`.
      (Both are optional; the store shows a generic tile without them.)
@@ -188,7 +203,10 @@ tick before **Submit for review** is enabled.
    step 3 was for). Sign in → upload → photo appears in Google Photos.
 3. Future releases: bump `version` in `manifest.json`, run
    `node scripts/package.js`, dashboard → item → **Package** → **Upload new
-   package** → **Submit for review**.
+   package** → **Submit for review**. If the listing text or screenshots
+   changed too, update them on the **Store listing** tab before submitting;
+   one review covers both. Existing users are updated automatically after
+   approval.
 
 ## 8. Troubleshooting
 

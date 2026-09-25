@@ -5,6 +5,7 @@
 //   screenshot-2-uploading.png      1280x800
 //   screenshot-3-success-dark.png   1280x800
 //   screenshot-4-options.png        1280x800
+//   screenshot-5-status.png         1280x800  (badge states + no-toast pages)
 //   promo-small-440x280.png         small promo tile
 //   promo-marquee-1400x560.png      marquee promo tile
 //
@@ -67,7 +68,7 @@ const photoUrl = 'data:image/svg+xml;utf8,' + encodeURIComponent(photoSvg);
 // Mock browser + page
 // ---------------------------------------------------------------------------
 
-function browserMock({ dark, badge, badgeColor, caption, body, extraCss = '' }) {
+function browserMock({ dark, badge, badgeColor, caption, body, extraCss = '', tabTitle = 'Field Notes — A week in the Dolomites', url = 'fieldnotes.example/dolomites' }) {
   const c = dark
     ? { frame: '#202124', tab: '#35363a', bar: '#35363a', omni: '#202124', text: '#e8eaed', muted: '#9aa0a6', page: '#202124', pageText: '#e8eaed', pageMuted: '#9aa0a6', card: '#2d2e31', rule: '#3c4043' }
     : { frame: '#dee1e6', tab: '#ffffff', bar: '#ffffff', omni: '#f1f3f4', text: '#202124', muted: '#5f6368', page: '#ffffff', pageText: '#202124', pageMuted: '#5f6368', card: '#ffffff', rule: '#e8eaed' };
@@ -109,10 +110,10 @@ function browserMock({ dark, badge, badgeColor, caption, body, extraCss = '' }) 
     ${extraCss}
   </style></head><body>
   <div class="chrome">
-    <div class="tabs"><div class="tab"><span class="fav"></span>Field Notes — A week in the Dolomites</div></div>
+    <div class="tabs"><div class="tab"><span class="fav"></span>${tabTitle}</div></div>
     <div class="toolbar">
       <span class="nav">‹ › ↻</span>
-      <div class="omni"><span class="lock">🔒</span>fieldnotes.example/dolomites</div>
+      <div class="omni"><span class="lock">🔒</span>${url}</div>
       <div class="ext"><img src="${icon16}">${badge ? `<span class="badge">${badge}</span>` : ''}</div>
       <span class="puzzle">🧩</span>
       <span class="avatar"></span>
@@ -147,6 +148,70 @@ const contextMenu = (x, y) => `
     <div>Inspect</div>
   </div>
   <svg class="cursor" style="left:${x - 6}px; top:${y - 8}px" viewBox="0 0 24 24"><path d="M5 3l14 9-6 1.5L16 20l-3 1.5-3-6.5L5 19z" fill="#fff" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+
+// ---------------------------------------------------------------------------
+// Status screenshot: a page the toast cannot reach (PDF viewer), the toolbar
+// badge states enlarged, and the system notification shown instead. Badge
+// text and colours are read from the real sources so this cannot drift.
+// ---------------------------------------------------------------------------
+
+const bgSource = fs.readFileSync(path.join(ROOT, 'src/background.js'), 'utf8');
+const BADGE_COLORS = Object.fromEntries(
+  [...bgSource.match(/const colors = \{([^}]*)\}/)[1].matchAll(/(\w+):\s*'(#[0-9a-f]{6})'/gi)].map((m) => [m[1], m[2]])
+);
+
+function bigBadge(state) {
+  return `<span class="bigicon"><img src="${icon128}" alt=""><span class="bigbadge" style="background:${BADGE_COLORS[state]}">${STRINGS.badge[state]}</span></span>`;
+}
+
+const statusBody = `
+  <div class="pdfbar"><span>trip-itinerary.pdf</span><span class="muted">1 / 3</span><span class="muted">− 100% +</span></div>
+  <div class="pdfpage">
+    <div class="pdftitle">Dolomites — Day by day</div>
+    <img class="pdfphoto" src="${photoUrl}" alt="">
+    ${'<div class="pdfline"></div>'.repeat(9)}
+  </div>
+  <svg class="ring" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#fbbc04" stroke-width="4"/></svg>
+  <div class="legend">
+    <h2>Watch the toolbar icon</h2>
+    <div class="row">${bigBadge('uploading')}<div><b>Uploading</b><span class="desc">Blue dots while the photo is on its way.</span></div></div>
+    <div class="row">${bigBadge('success')}<div><b>Uploaded</b><span class="desc">Green check: it's in your Google Photos library.</span></div></div>
+    <div class="row">${bigBadge('failure')}<div><b>Failed</b><span class="desc">Red mark: the notification or toast says why.</span></div></div>
+    <p class="where">The on-page toast can't appear on the Chrome Web Store, <code>chrome://</code> pages such as Settings and New Tab, the PDF viewer, or local files. There you get the badge and a system notification instead.</p>
+  </div>
+  <div class="notif">
+    <div class="nhead">Google Chrome · now</div>
+    <div class="nbody"><img src="${icon128}" alt=""><div><b>${STRINGS.notification.successTitle}</b><span>${STRINGS.notification.successMessage}</span></div></div>
+  </div>`;
+
+const statusCss = `
+  .page { background: #525659; }
+  .pdfbar { height: 44px; background: #323639; color: #f1f3f4; display: flex; align-items: center; gap: 28px; padding: 0 20px; font-size: 14px; }
+  .pdfbar .muted { color: #bdc1c6; }
+  .pdfpage { position: absolute; left: 90px; top: 74px; width: 520px; height: 640px; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.4); padding: 44px 48px; }
+  .pdftitle { font-size: 22px; font-weight: 700; color: #202124; margin-bottom: 18px; }
+  .pdfphoto { width: 100%; height: 230px; object-fit: cover; display: block; margin-bottom: 22px; }
+  .pdfline { height: 9px; background: #e8eaed; border-radius: 4px; margin: 0 0 14px; }
+  .pdfline:nth-child(3n) { width: 78%; }
+  .ring { position: absolute; z-index: 8; width: 60px; height: 60px; right: 105px; top: -55px; }
+  .ext { transform: scale(1.35); }
+  .legend { position: absolute; right: 40px; top: 44px; width: 540px; background: #fff; border-radius: 16px; padding: 26px 30px 22px; box-shadow: 0 16px 40px rgba(0,0,0,0.35); color: #202124; }
+  .legend h2 { margin: 0 0 18px; font-size: 26px; }
+  .row { display: flex; align-items: center; gap: 20px; margin-bottom: 16px; }
+  .row b { display: block; font-size: 18px; }
+  .row .desc { color: #5f6368; font-size: 15px; }
+  .bigicon { position: relative; flex: 0 0 64px; width: 64px; height: 64px; }
+  .bigicon img { width: 56px; height: 56px; border-radius: 12px; }
+  .bigbadge { position: absolute; right: -4px; bottom: -2px; min-width: 30px; height: 26px; padding: 0 6px; border-radius: 6px; color: #fff; font-size: 18px; font-weight: 700; line-height: 26px; text-align: center; box-shadow: 0 0 0 3px #fff; }
+  .where { margin: 8px 0 0; padding-top: 14px; border-top: 1px solid #e8eaed; color: #3c4043; font-size: 15px; line-height: 1.5; }
+  .where code { font-size: 14px; background: #f1f3f4; padding: 1px 5px; border-radius: 4px; }
+  .notif { position: absolute; right: 40px; bottom: 34px; width: 400px; background: #2b2b2b; color: #fff; border-radius: 10px; box-shadow: 0 12px 30px rgba(0,0,0,0.45); padding: 12px 16px 16px; }
+  .nhead { font-size: 12px; color: #c8c8c8; margin-bottom: 10px; }
+  .nbody { display: flex; gap: 14px; align-items: center; }
+  .nbody img { width: 44px; height: 44px; border-radius: 9px; }
+  .nbody b { display: block; font-size: 15px; margin-bottom: 2px; }
+  .nbody span { font-size: 13px; color: #d0d0d0; }
+`;
 
 // ---------------------------------------------------------------------------
 // Promo tiles
@@ -291,6 +356,12 @@ await shot('screenshot-4-options.png', null, {
   onReady: async (page) => { await page.waitForTimeout(600); },
 });
 server.close();
+
+await shot('screenshot-5-status.png', browserMock({
+  badge: STRINGS.badge.success, badgeColor: BADGE_COLORS.success,
+  tabTitle: 'trip-itinerary.pdf', url: 'fieldnotes.example/files/trip-itinerary.pdf',
+  body: statusBody, extraCss: statusCss,
+}));
 
 await shot('promo-small-440x280.png', promoTile({ w: 440, h: 280, titleSize: 30, tagSize: 16, iconSize: 96, showToast: false }), { w: 440, h: 280 });
 await shot('promo-marquee-1400x560.png', promoTile({ w: 1400, h: 560, titleSize: 64, tagSize: 28, iconSize: 220, showToast: true }), { w: 1400, h: 560 });

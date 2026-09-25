@@ -18,10 +18,27 @@
     <section>
       <h2>What it does</h2>
       <ul>
-        <li>Adds one item to the image context menu: <strong>Upload to Google Photos</strong>.</li>
+        <li>Adds an item to the image context menu: <strong>Upload to Google Photos</strong>.</li>
         <li>Shows a small in-page toast with a thumbnail and progress, then a link to the uploaded photo.</li>
         <li>Optionally files every upload into an album of your choice.</li>
+        <li>On Instagram, Threads and Facebook, use <strong>Upload image under cursor to Google Photos</strong> from the right-click menu; those sites hide their photos under an invisible layer.</li>
       </ul>
+    </section>
+
+    <section>
+      <h2>No toast on this page?</h2>
+      <p>
+        Chrome doesn't let extensions draw on some pages: the Chrome Web Store,
+        <code>chrome://</code> pages such as Settings and New Tab, the PDF viewer,
+        and local files. The upload still works there. Watch the toolbar icon
+        instead, and a system notification reports the result:
+      </p>
+      <ul class="badges">
+        <li><span class="badge uploading">…</span> Uploading</li>
+        <li><span class="badge success">✓</span> Uploaded to Google Photos</li>
+        <li><span class="badge failure">!</span> Failed; the notification says why</li>
+      </ul>
+      <p>Pin the icon (puzzle-piece menu → pin) so it's always visible.</p>
     </section>
 
     <section>
