@@ -44,20 +44,37 @@ const OVERLAY_SITES = {
   imageHosts: ['*://*.cdninstagram.com/*', '*://*.fbcdn.net/*'],
 };
 
-// removeAll first so a reload (which also fires onInstalled) does not fail
-// with "duplicate id". Also rebuilt on browser startup as a safety net.
+// Built on install/update and again on browser startup as a safety net.
+// After an update, Chrome fires onInstalled and onStartup together; two
+// overlapping "removeAll then create" runs would both clear before either
+// creates, and the second create fails with "duplicate id". So builds are
+// queued one after another, and each create's lastError is consumed.
+let menuBuild = Promise.resolve();
+
 function createMenu() {
-  chrome.contextMenus.removeAll(() => {
-    chrome.contextMenus.create({
-      id: MENU_ID,
-      title: STRINGS.menuTitle,
-      contexts: ['image'],
-    });
-    chrome.contextMenus.create({
-      id: MENU_ID_CURSOR,
-      title: STRINGS.menuTitleCursor,
-      contexts: ['page', 'link', 'video'],
-      documentUrlPatterns: OVERLAY_SITES.pages,
+  menuBuild = menuBuild.then(buildMenu, buildMenu);
+  return menuBuild;
+}
+
+function buildMenu() {
+  const logIfError = () => {
+    const err = chrome.runtime.lastError;
+    if (err) console.warn('[Upload to Google Photos] context menu:', err.message);
+  };
+  return new Promise((resolve) => {
+    chrome.contextMenus.removeAll(() => {
+      logIfError();
+      chrome.contextMenus.create({
+        id: MENU_ID,
+        title: STRINGS.menuTitle,
+        contexts: ['image'],
+      }, logIfError);
+      chrome.contextMenus.create({
+        id: MENU_ID_CURSOR,
+        title: STRINGS.menuTitleCursor,
+        contexts: ['page', 'link', 'video'],
+        documentUrlPatterns: OVERLAY_SITES.pages,
+      }, () => { logIfError(); resolve(); });
     });
   });
 }
