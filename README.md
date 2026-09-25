@@ -71,6 +71,9 @@ These were ambiguous in the brief; here is what was chosen and why.
   `permissions.contains` is checked. If the user declines, the in-page
   fallback (`activeTab` + `chrome.scripting.executeScript`) still runs and
   works whenever the page itself may read the image.
+  Known image CDNs that shard across numbered hosts (`SHARDED_IMAGE_CDNS`:
+  fbcdn.net, googleusercontent.com, wp.com, …) are requested as one
+  `*://*.<cdn>/*` pattern, otherwise every new server would prompt again.
 - **A second menu item for sites that overlay their photos.** Instagram,
   Threads and Facebook put a transparent element over every `<img>` to defeat
   right-click saving, so Chrome opens the plain page menu and an

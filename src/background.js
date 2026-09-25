@@ -105,12 +105,28 @@ chrome.runtime.onMessage.addListener((message, sender) => {
  * Instead we ask for the image's origin the first time it is used; Chrome
  * shows one prompt per origin and remembers the answer. Once granted, the
  * worker's fetch to that host is no longer subject to CORS.
+ *
+ * Large image CDNs spread files over many numbered servers
+ * (scontent-mia3-1.xx.fbcdn.net, lh5.googleusercontent.com, i2.wp.com...),
+ * so asking per exact host would prompt on nearly every photo. For those we
+ * ask once for the whole CDN domain instead.
  */
+const SHARDED_IMAGE_CDNS = [
+  'fbcdn.net', 'cdninstagram.com',                 // Facebook, Instagram, Threads
+  'googleusercontent.com', 'ggpht.com',            // Google Photos/Drive/Blogger, YouTube avatars
+  'bp.blogspot.com', 'ytimg.com',
+  'wp.com',                                        // WordPress/Jetpack image CDN (i0/i1/i2.wp.com)
+  'twimg.com', 'redd.it', 'pinimg.com', 'staticflickr.com', 'media.tumblr.com',
+  'tiktokcdn.com', 'licdn.com', 'media-amazon.com', 'ssl-images-amazon.com',
+];
+
 function originPatternFor(srcUrl) {
   try {
     const url = new URL(srcUrl);
     if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
-    return `${url.origin}/*`;
+    const host = url.hostname;
+    const cdn = SHARDED_IMAGE_CDNS.find((d) => host === d || host.endsWith(`.${d}`));
+    return cdn ? `*://*.${cdn}/*` : `${url.origin}/*`;
   } catch (err) {
     return null;
   }

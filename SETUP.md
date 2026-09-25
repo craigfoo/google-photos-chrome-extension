@@ -97,7 +97,8 @@ own account, that is fine for personal use.
    app is unverified; continue.)
 4. Expected next: a small Chrome prompt "Upload to Google Photos wants
    additional permissions — Read and change your data on <image host>".
-   Click **Allow**; it is asked once per image host and is what lets the
+   Click **Allow**; it is asked once per image host (once per CDN for big
+   sites like Facebook, e.g. "all fbcdn.net sites") and is what lets the
    extension download the image bytes. Then a toast slides in at the
    bottom-right of the page with a thumbnail and a moving blue bar, then
    turns green:
