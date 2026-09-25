@@ -147,12 +147,11 @@ tick before **Submit for review** is enabled.
      > invisible layer, use "Upload image under cursor to Google Photos"
      > from the right-click menu instead.
      >
-     > No toast? Chrome doesn't let extensions draw on some pages: the Chrome
-     > Web Store, chrome:// pages such as Settings and New Tab, the PDF viewer
-     > and local files. There, watch the toolbar icon: blue dots while
-     > uploading, a green check when done, a red ! if it failed. A system
-     > notification also reports the result. Pin the icon (puzzle-piece menu →
-     > pin) to always see it.
+     > No toast? Chrome doesn't let extensions draw on the Chrome Web Store or
+     > other pages it protects. The upload still works there: watch the
+     > toolbar icon, which shows blue dots while uploading, a green check when
+     > done and a red ! if it failed, and a system notification reports the
+     > result. Pin the icon (puzzle-piece menu → pin) to always see it.
      >
      > Uses Google's append-only scope: the extension can add photos but
      > cannot read, edit or delete anything in your library. No servers, no

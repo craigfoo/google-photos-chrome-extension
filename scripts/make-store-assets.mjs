@@ -150,7 +150,8 @@ const contextMenu = (x, y) => `
   <svg class="cursor" style="left:${x - 6}px; top:${y - 8}px" viewBox="0 0 24 24"><path d="M5 3l14 9-6 1.5L16 20l-3 1.5-3-6.5L5 19z" fill="#fff" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
 
 // ---------------------------------------------------------------------------
-// Status screenshot: a page the toast cannot reach (PDF viewer), the toolbar
+// Status screenshot: a page the toast cannot reach (the Chrome Web Store, the
+// one protected page where the menu item still appears), the toolbar
 // badge states enlarged, and the system notification shown instead. Badge
 // text and colours are read from the real sources so this cannot drift.
 // ---------------------------------------------------------------------------
@@ -165,19 +166,21 @@ function bigBadge(state) {
 }
 
 const statusBody = `
-  <div class="pdfbar"><span>trip-itinerary.pdf</span><span class="muted">1 / 3</span><span class="muted">− 100% +</span></div>
-  <div class="pdfpage">
-    <div class="pdftitle">Dolomites — Day by day</div>
-    <img class="pdfphoto" src="${photoUrl}" alt="">
-    ${'<div class="pdfline"></div>'.repeat(9)}
+  <div class="storebar"><span class="storemark"></span><span class="storename">Web Store</span><span class="storesearch">Search extensions and themes</span></div>
+  <div class="listing">
+    <div class="lhead"><img src="${icon128}" alt=""><div><div class="ltitle">Upload to Google Photos</div><div class="lmeta"><span>Extension</span><span>Tools</span></div></div></div>
+    <div class="carousel"><span class="arrow">‹</span><img class="shot" src="${photoUrl}" alt=""><span class="arrow">›</span></div>
+    <div class="cdots"><i></i><i class="on"></i><i></i><i></i><i></i></div>
+    <div class="ltext"></div><div class="ltext short"></div>
   </div>
+  <svg class="pointer" viewBox="0 0 24 24"><path d="M5 3l14 9-6 1.5L16 20l-3 1.5-3-6.5L5 19z" fill="#fff" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/></svg>
   <svg class="ring" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#fbbc04" stroke-width="4"/></svg>
   <div class="legend">
     <h2>Watch the toolbar icon</h2>
     <div class="row">${bigBadge('uploading')}<div><b>Uploading</b><span class="desc">Blue dots while the photo is on its way.</span></div></div>
     <div class="row">${bigBadge('success')}<div><b>Uploaded</b><span class="desc">Green check: it's in your Google Photos library.</span></div></div>
     <div class="row">${bigBadge('failure')}<div><b>Failed</b><span class="desc">Red mark: the notification or toast says why.</span></div></div>
-    <p class="where">The on-page toast can't appear on the Chrome Web Store, <code>chrome://</code> pages such as Settings and New Tab, the PDF viewer, or local files. There you get the badge and a system notification instead.</p>
+    <p class="where">Chrome doesn't let extensions draw on the Chrome Web Store or other pages it protects, so the on-page toast can't appear there. The upload still works: the badge and a system notification tell you how it went.</p>
   </div>
   <div class="notif">
     <div class="nhead">Google Chrome · now</div>
@@ -185,14 +188,26 @@ const statusBody = `
   </div>`;
 
 const statusCss = `
-  .page { background: #525659; }
-  .pdfbar { height: 44px; background: #323639; color: #f1f3f4; display: flex; align-items: center; gap: 28px; padding: 0 20px; font-size: 14px; }
-  .pdfbar .muted { color: #bdc1c6; }
-  .pdfpage { position: absolute; left: 90px; top: 74px; width: 520px; height: 640px; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.4); padding: 44px 48px; }
-  .pdftitle { font-size: 22px; font-weight: 700; color: #202124; margin-bottom: 18px; }
-  .pdfphoto { width: 100%; height: 230px; object-fit: cover; display: block; margin-bottom: 22px; }
-  .pdfline { height: 9px; background: #e8eaed; border-radius: 4px; margin: 0 0 14px; }
-  .pdfline:nth-child(3n) { width: 78%; }
+  .page { background: #ffffff; }
+  .storebar { height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 28px; border-bottom: 1px solid #e8eaed; }
+  .storemark { width: 26px; height: 26px; border-radius: 6px; background: #dadce0; }
+  .storename { font-size: 17px; color: #3c4043; }
+  .storesearch { margin-left: 120px; width: 360px; height: 36px; border-radius: 18px; background: #f1f3f4; color: #80868b; font-size: 14px; line-height: 36px; padding-left: 18px; }
+  .listing { position: absolute; left: 60px; top: 84px; width: 580px; }
+  .lhead { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .lhead img { width: 56px; height: 56px; border-radius: 12px; }
+  .ltitle { font-size: 26px; font-weight: 600; color: #202124; }
+  .lmeta { display: flex; gap: 8px; margin-top: 6px; }
+  .lmeta span { font-size: 13px; color: #3c4043; background: #f1f3f4; border-radius: 6px; padding: 4px 10px; }
+  .carousel { display: flex; align-items: center; gap: 14px; }
+  .carousel .arrow { font-size: 30px; color: #5f6368; }
+  .shot { width: 500px; height: 312px; object-fit: cover; border-radius: 8px; border: 3px solid #1a73e8; }
+  .cdots { display: flex; gap: 8px; justify-content: center; margin: 16px 0 26px; }
+  .cdots i { width: 8px; height: 8px; border-radius: 4px; background: #dadce0; }
+  .cdots i.on { background: #1a73e8; }
+  .ltext { height: 10px; background: #e8eaed; border-radius: 5px; margin: 0 0 14px 40px; width: 460px; }
+  .ltext.short { width: 320px; }
+  .pointer { position: absolute; z-index: 7; width: 24px; height: 24px; left: 360px; top: 300px; }
   .ring { position: absolute; z-index: 8; width: 60px; height: 60px; right: 105px; top: -55px; }
   .ext { transform: scale(1.35); }
   .legend { position: absolute; right: 40px; top: 44px; width: 540px; background: #fff; border-radius: 16px; padding: 26px 30px 22px; box-shadow: 0 16px 40px rgba(0,0,0,0.35); color: #202124; }
@@ -359,7 +374,7 @@ server.close();
 
 await shot('screenshot-5-status.png', browserMock({
   badge: STRINGS.badge.success, badgeColor: BADGE_COLORS.success,
-  tabTitle: 'trip-itinerary.pdf', url: 'fieldnotes.example/files/trip-itinerary.pdf',
+  tabTitle: 'Upload to Google Photos - Chrome Web Store', url: 'chromewebstore.google.com/detail/upload-to-google-photos',
   body: statusBody, extraCss: statusCss,
 }));
 
